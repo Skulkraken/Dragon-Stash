@@ -1,5 +1,5 @@
 '''
-This program takes a file in its directory named 'item.json' and
+This program takes requests item data from Data Dragon and
 converts its data into a CSV file, which is named 'itemdbase.csv' and
 then written into the same folder.
 '''
@@ -9,6 +9,7 @@ from dataclasses import dataclass, asdict
 import json
 import pandas as pd
 import csv
+import requests
 
 ID: str
 Name: str
@@ -96,90 +97,90 @@ for stat in dataclasses.fields(Stat):
 with open('itemdbase.csv', 'w',newline='') as f:
     output = csv.writer(f)
     output.writerow(header)
-    with open('item.json', 'r') as jfile:
-        jsondata = json.load(jfile)
-        for i in jsondata['data'].items():
-            ID = i[0]
-            item = jsondata['data'][ID]
-            Name = item.get('name','')
-            Stacks = item.get('stacks',1)
-            Consumed = item.get('consumed',False)
-            CombineCost = item['gold'].get('base',0)
-            TotalCost = item['gold'].get('total',0)
-            Sell = item['gold'].get('sell',0)
-            Rift = item['maps'].get('11',True)
-            Abyss = item['maps'].get('12',True)
-            statblock = item.get('stats','')
-            stat = Stat(statblock.get('FlatHPPoolMod',None),
-                          statblock.get('rFlatHPModPerLevel',None),
-                          statblock.get('FlatMPPoolMod',None),
-                          statblock.get('rFlatMPModPerLevel',None),
-                          statblock.get('PercentHPPoolMod',None),
-                          statblock.get('PercentMPPoolMod',None),
-                          statblock.get('FlatHPRegenMod',None),
-                          statblock.get('rFlatHPRegenModPerLevel',None),
-                          statblock.get('PercentHPRegenMod',None),
-                          statblock.get('FlatMPRegenMod',None),
-                          statblock.get('rFlatMPRegenModPerLevel',None),
-                          statblock.get('PercentMPRegenMod',None),
-                          statblock.get('FlatArmorMod',None),
-                          statblock.get('rFlatArmorModPerLevel',None),
-                          statblock.get('PercentArmorMod',None),
-                          statblock.get('rFlatArmorPenetrationMod',None),
-                          statblock.get('rFlatArmorPenetrationModPerLevel',None),
-                          statblock.get('rPercentArmorPenetrationMod',None),
-                          statblock.get('rPercentArmorPenetrationModPerLevel',None),
-                          statblock.get('FlatPhysicalDamageMod',None),
-                          statblock.get('rFlatPhysicalDamageModPerLevel',None),
-                          statblock.get('PercentPhysicalDamageMod',None),
-                          statblock.get('FlatMagicDamageMod',None),
-                          statblock.get('rFlatMagicDamageModPerLevel',None),
-                          statblock.get('PercentMagicDamageMod',None),
-                          statblock.get('FlatMovementSpeedMod',None),
-                          statblock.get('rFlatMovementSpeedModPerLevel',None),
-                          statblock.get('PercentMovementSpeedMod',None),
-                          statblock.get('rPercentMovementSpeedModPerLevel',None),
-                          statblock.get('FlatAttackSpeedMod',None),
-                          statblock.get('PercentAttackSpeedMod',None),
-                          statblock.get('rPercentAttackSpeedModPerLevel',None),
-                          statblock.get('rFlatDodgeMod',None),
-                          statblock.get('rFlatDodgeModPerLevel',None),
-                          statblock.get('PercentDodgeMod',None),
-                          statblock.get('FlatCritChanceMod',None),
-                          statblock.get('rFlatCritChanceModPerLevel',None),
-                          statblock.get('PercentCritChanceMod',None),
-                          statblock.get('FlatCritDamageMod',None),
-                          statblock.get('rFlatCritDamageModPerLevel',None),
-                          statblock.get('PercentCritDamageMod',None),
-                          statblock.get('FlatBlockMod',None),
-                          statblock.get('PercentBlockMod',None),
-                          statblock.get('FlatSpellBlockMod',None),
-                          statblock.get('rFlatSpellBlockModPerLevel',None),
-                          statblock.get('PercentSpellBlockMod',None),
-                          statblock.get('FlatEXPBonus',None),
-                          statblock.get('PercentEXPBonus',None),
-                          statblock.get('rPercentCooldownMod',None),
-                          statblock.get('rPercentCooldownModPerLevel',None),
-                          statblock.get('rFlatTimeDeadMod',None),
-                          statblock.get('rFlatTimeDeadModPerLevel',None),
-                          statblock.get('rPercentTimeDeadMod',None),
-                          statblock.get('rPercentTimeDeadModPerLevel',None),
-                          statblock.get('rFlatGoldPer10Mod',None),
-                          statblock.get('rFlatMagicPenetrationMod',None),
-                          statblock.get('rFlatMagicPenetrationModPerLevel',None),
-                          statblock.get('rPercentMagicPenetrationMod',None),
-                          statblock.get('rPercentMagicPenetrationModPerLevel',None),
-                          statblock.get('FlatEnergyRegenMod',None),
-                          statblock.get('rFlatEnergyRegenModPerLevel',None),
-                          statblock.get('FlatEnergyPoolMod',None),
-                          statblock.get('rFlatEnergyModPerLevel',None),
-                          statblock.get('PercentLifeStealMod',None),
-                          statblock.get('PercentSpellVampMod',None))
-            info = [ID,Name,Stacks,Consumed,CombineCost,
-                    TotalCost,Sell,Rift,Abyss]
-            for i in vars(stat):
-                info.append(asdict(stat)[i])
-            output.writerow(info)
+    response = requests.get(
+        "http://ddragon.leagueoflegends.com/cdn/9.23.1/data/en_US/item.json")
+    jsondata = response.json()
+    for i in jsondata['data'].items():
+        ID = i[0]
+        item = jsondata['data'][ID]
+        Name = item.get('name','')
+        Stacks = item.get('stacks',1)
+        Consumed = item.get('consumed',False)
+        CombineCost = item['gold'].get('base',0)
+        TotalCost = item['gold'].get('total',0)
+        Sell = item['gold'].get('sell',0)
+        Rift = item['maps'].get('11',True)
+        Abyss = item['maps'].get('12',True)
+        statblock = item.get('stats','')
+        stat = Stat(statblock.get('FlatHPPoolMod',None),
+                      statblock.get('rFlatHPModPerLevel',None),
+                      statblock.get('FlatMPPoolMod',None),
+                      statblock.get('rFlatMPModPerLevel',None),
+                      statblock.get('PercentHPPoolMod',None),
+                      statblock.get('PercentMPPoolMod',None),
+                      statblock.get('FlatHPRegenMod',None),
+                      statblock.get('rFlatHPRegenModPerLevel',None),
+                      statblock.get('PercentHPRegenMod',None),
+                      statblock.get('FlatMPRegenMod',None),
+                      statblock.get('rFlatMPRegenModPerLevel',None),
+                      statblock.get('PercentMPRegenMod',None),
+                      statblock.get('FlatArmorMod',None),
+                      statblock.get('rFlatArmorModPerLevel',None),
+                      statblock.get('PercentArmorMod',None),
+                      statblock.get('rFlatArmorPenetrationMod',None),
+                      statblock.get('rFlatArmorPenetrationModPerLevel',None),
+                      statblock.get('rPercentArmorPenetrationMod',None),
+                      statblock.get('rPercentArmorPenetrationModPerLevel',None),
+                      statblock.get('FlatPhysicalDamageMod',None),
+                      statblock.get('rFlatPhysicalDamageModPerLevel',None),
+                      statblock.get('PercentPhysicalDamageMod',None),
+                      statblock.get('FlatMagicDamageMod',None),
+                      statblock.get('rFlatMagicDamageModPerLevel',None),
+                      statblock.get('PercentMagicDamageMod',None),
+                      statblock.get('FlatMovementSpeedMod',None),
+                      statblock.get('rFlatMovementSpeedModPerLevel',None),
+                      statblock.get('PercentMovementSpeedMod',None),
+                      statblock.get('rPercentMovementSpeedModPerLevel',None),
+                      statblock.get('FlatAttackSpeedMod',None),
+                      statblock.get('PercentAttackSpeedMod',None),
+                      statblock.get('rPercentAttackSpeedModPerLevel',None),
+                      statblock.get('rFlatDodgeMod',None),
+                      statblock.get('rFlatDodgeModPerLevel',None),
+                      statblock.get('PercentDodgeMod',None),
+                      statblock.get('FlatCritChanceMod',None),
+                      statblock.get('rFlatCritChanceModPerLevel',None),
+                      statblock.get('PercentCritChanceMod',None),
+                      statblock.get('FlatCritDamageMod',None),
+                      statblock.get('rFlatCritDamageModPerLevel',None),
+                      statblock.get('PercentCritDamageMod',None),
+                      statblock.get('FlatBlockMod',None),
+                      statblock.get('PercentBlockMod',None),
+                      statblock.get('FlatSpellBlockMod',None),
+                      statblock.get('rFlatSpellBlockModPerLevel',None),
+                      statblock.get('PercentSpellBlockMod',None),
+                      statblock.get('FlatEXPBonus',None),
+                      statblock.get('PercentEXPBonus',None),
+                      statblock.get('rPercentCooldownMod',None),
+                      statblock.get('rPercentCooldownModPerLevel',None),
+                      statblock.get('rFlatTimeDeadMod',None),
+                      statblock.get('rFlatTimeDeadModPerLevel',None),
+                      statblock.get('rPercentTimeDeadMod',None),
+                      statblock.get('rPercentTimeDeadModPerLevel',None),
+                      statblock.get('rFlatGoldPer10Mod',None),
+                      statblock.get('rFlatMagicPenetrationMod',None),
+                      statblock.get('rFlatMagicPenetrationModPerLevel',None),
+                      statblock.get('rPercentMagicPenetrationMod',None),
+                      statblock.get('rPercentMagicPenetrationModPerLevel',None),
+                      statblock.get('FlatEnergyRegenMod',None),
+                      statblock.get('rFlatEnergyRegenModPerLevel',None),
+                      statblock.get('FlatEnergyPoolMod',None),
+                      statblock.get('rFlatEnergyModPerLevel',None),
+                      statblock.get('PercentLifeStealMod',None),
+                      statblock.get('PercentSpellVampMod',None))
+        info = [ID,Name,Stacks,Consumed,CombineCost,TotalCost,Sell,Rift,Abyss]
+        for i in vars(stat):
+            info.append(asdict(stat)[i])
+        output.writerow(info)
 
 ifile = r'itemdbase.csv'
 itemstats = pd.read_csv(ifile,index_col = 0)
