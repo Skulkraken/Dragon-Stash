@@ -97,8 +97,12 @@ for stat in dataclasses.fields(Stat):
 with open('itemdbase.csv', 'w',newline='') as f:
     output = csv.writer(f)
     output.writerow(header)
+    version_request = requests.get(
+        "https://ddragon.leagueoflegends.com/api/versions.json")
+    lol_versions = version_request.json()
+    latest_version = lol_versions[0]
     response = requests.get(
-        "http://ddragon.leagueoflegends.com/cdn/9.23.1/data/en_US/item.json")
+        f"http://ddragon.leagueoflegends.com/cdn/{latest_version}/data/en_US/item.json")
     jsondata = response.json()
     for i in jsondata['data'].items():
         ID = i[0]
